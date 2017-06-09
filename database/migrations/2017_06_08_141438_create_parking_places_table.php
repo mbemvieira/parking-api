@@ -17,8 +17,6 @@ class CreateParkingPlacesTable extends Migration
             $table->increments('id');
             $table->integer('company_id')->unsigned();
             $table->foreign('company_id')->references('id')->on('companies');
-            $table->integer('vehicle_id')->unsigned()->nullable();
-            $table->foreign('vehicle_id')->references('id')->on('vehicles');
 
             $table->string('parking_place_name');
             $table->unique(['parking_place_name', 'company_id']);
@@ -26,10 +24,6 @@ class CreateParkingPlacesTable extends Migration
             $table->boolean('is_empty');
 
             $table->timestamps();
-        });
-
-        Schema::table('vehicles', function (Blueprint $table) {
-            $table->foreign('parking_place_id')->references('id')->on('parking_places');
         });
     }
 
@@ -40,10 +34,6 @@ class CreateParkingPlacesTable extends Migration
      */
     public function down()
     {
-        Schema::table('vehicles', function (Blueprint $table) {
-            $table->dropForeign(['parking_place_id']);
-        });
-        
         Schema::dropIfExists('parking_places');
     }
 }

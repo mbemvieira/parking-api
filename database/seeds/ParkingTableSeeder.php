@@ -11,6 +11,38 @@ class ParkingTableSeeder extends Seeder
      */
     public function run()
     {
-        //
+        // Remove old data
+        App\Payment::truncate();
+        App\Vehicle::truncate();
+        App\Client::truncate();
+        App\ParkingPlace::truncate();
+        App\Company::truncate();
+
+        $users = App\User::all();
+
+        foreach ($users as $user) {
+            $user->company()->save( factory(App\Company::class, 1)->make()->first() );
+
+            $parking_places = factory(App\ParkingPlace::class, 2)->create([
+                'company_id' => $user->company->id
+            ]);
+
+            $clients = factory(App\Client::class, 2)->create([
+                'company_id' => $user->company->id
+            ])->each(function ($client) use ($parking_places) {
+                $client->vehicles()->saveMany( factory(App\Vehicle::class, 2)->make() );
+
+                foreach ($client->vehicles as $vehicle) {
+                    foreach ($parking_places as $parking_place) {
+                        factory(App\Payment::class, 2)->create([
+                            'vehicle_id' => $vehicle->id,
+                            'parking_place_id' => $parking_place->id
+                        ]);
+                    }
+                }
+            });
+        }
+
+        // $companies
     }
 }

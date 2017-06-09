@@ -25,10 +25,10 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 $factory->define(App\Company::class, function (Faker\Generator $faker) {
-    
     $localisedFaker = Faker\Factory::create("pt_BR");
 
     return [
+        // user_id
         'company_name' => $localisedFaker->company,
         'cnpj' => $localisedFaker->unique()->cnpj(false),
         'phone' => $localisedFaker->phoneNumberCleared,
@@ -36,7 +36,6 @@ $factory->define(App\Company::class, function (Faker\Generator $faker) {
         'zip_code' => $localisedFaker->numerify('########'),
         'address_street' => $localisedFaker->streetName,
         'address_number' => $localisedFaker->numerify('##'),
-        'address_complements' => $localisedFaker->numerify('Apto #0#'),
         'address_neighbour' => 'Centro',
         'address_city' => $localisedFaker->city,
         'address_state' => $localisedFaker->state,
@@ -47,10 +46,10 @@ $factory->define(App\Company::class, function (Faker\Generator $faker) {
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 $factory->define(App\Client::class, function (Faker\Generator $faker) {
-
     $localisedFaker = Faker\Factory::create("pt_BR");
 
     return [
+        // company_id
         'client_name' => $localisedFaker->name,
         'cpf' => $localisedFaker->unique()->cpf(false),
         'phone' => $localisedFaker->phoneNumberCleared,
@@ -58,7 +57,6 @@ $factory->define(App\Client::class, function (Faker\Generator $faker) {
         'zip_code' => $localisedFaker->numerify('########'),
         'address_street' => $localisedFaker->streetName,
         'address_number' => $localisedFaker->numerify('##'),
-        'address_complements' => $localisedFaker->numerify('Apto #0#'),
         'address_neighbour' => 'Centro',
         'address_city' => $localisedFaker->city,
         'address_state' => $localisedFaker->state,
@@ -67,9 +65,19 @@ $factory->define(App\Client::class, function (Faker\Generator $faker) {
 });
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
-$factory->define(App\Vehicle::class, function (Faker\Generator $faker) {
-
+$factory->define(App\ParkingPlace::class, function (Faker\Generator $faker) {
     return [
+        // company_id
+        'parking_place_name' => $faker->bothify('?##'),
+        'vehicle_last_entry' => \Carbon\Carbon::now(),
+        'is_empty' => true,
+    ];
+});
+
+/** @var \Illuminate\Database\Eloquent\Factory $factory */
+$factory->define(App\Vehicle::class, function (Faker\Generator $faker) {
+    return [
+        // client_id, parking_place_id
         'plate' => $faker->unique()->bothify('??? ####'),
         'brand' => $faker->word,
         'model' => $faker->word,
@@ -80,19 +88,9 @@ $factory->define(App\Vehicle::class, function (Faker\Generator $faker) {
 });
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
-$factory->define(App\ParkingPlace::class, function (Faker\Generator $faker) {
-
-    return [
-        'parking_place_name' => $faker->bothify('?##'),
-        'vehicle_last_entry' => \Carbon\Carbon::now(),
-        'is_empty' => true,
-    ];
-});
-
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
 $factory->define(App\Payment::class, function (Faker\Generator $faker) {
-
     return [
+        // vehicle_id, parking_place_id
         'entry' => $faker->dateTimeBetween('-30 days', '-25 days'),
         'exit' => $faker->dateTimeBetween('-26 days', '-20 days'),
     ];
