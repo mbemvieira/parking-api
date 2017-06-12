@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Company;
+use App\User;
 use App\ParkingPlace;
 use Illuminate\Http\Request;
 
@@ -14,17 +16,25 @@ class ParkingPlaceController extends Controller
      */
     public function index()
     {
-        //
-    }
+        $user = User::first();
+        $company = Company::where('user_id', $user->id)->first();
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        $response = [];
+
+        if ( $company === null ) {
+            $response['status'] = -1;
+            $response['message'] = 'Company not found!';
+            return $response;
+        }
+
+        $response['status'] = 0;
+        $response['message'] = 'Ok!';
+        $response['clients'] = $company->parking_places->all();
+
+        return response()
+            ->json($response, 200,
+                ['Content-type' => 'application/json; charset=utf-8'],
+                JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -45,17 +55,6 @@ class ParkingPlaceController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show(ParkingPlace $parkingPlace)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\ParkingPlace  $parkingPlace
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(ParkingPlace $parkingPlace)
     {
         //
     }

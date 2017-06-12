@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Client;
 use App\Company;
+use App\Payment;
 use App\User;
 use Illuminate\Http\Request;
 
-class ClientController extends Controller
+class PaymentController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -25,11 +25,19 @@ class ClientController extends Controller
             $response['status'] = -1;
             $response['message'] = 'Company not found!';
             return $response;
+        } else if ( $company->parking_places->all() === [] ) {
+            $response['status'] = -2;
+            $response['message'] = 'No parking places registered!';
+            return $response;
         }
+
+        $parking_places_id = $company->parking_places()->pluck('id')->all();
+
+        $payments = Payment::whereIn('parking_place_id', $parking_places_id)->get();
 
         $response['status'] = 0;
         $response['message'] = 'Ok!';
-        $response['clients'] = $company->clients->all();
+        $response['clients'] = $payments;
 
         return response()
             ->json($response, 200,
@@ -51,10 +59,10 @@ class ClientController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Client  $client
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Client $client)
+    public function show($id)
     {
         //
     }
@@ -63,10 +71,10 @@ class ClientController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Client  $client
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Client $client)
+    public function update(Request $request, $id)
     {
         //
     }
@@ -74,10 +82,10 @@ class ClientController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Client  $client
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Client $client)
+    public function destroy($id)
     {
         //
     }

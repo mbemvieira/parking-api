@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Company;
+use App\User;
 use App\Vehicle;
 use Illuminate\Http\Request;
 
@@ -14,17 +16,33 @@ class VehicleController extends Controller
      */
     public function index()
     {
-        //
-    }
+        $user = User::first();
+        $company = Company::where('user_id', $user->id)->first();
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        $response = [];
+
+        if ( $company === null ) {
+            $response['status'] = -1;
+            $response['message'] = 'Company not found!';
+            return $response;
+        } else if ( $company->clients->all() === [] ) {
+            $response['status'] = -2;
+            $response['message'] = 'No clients registered!';
+            return $response;
+        }
+
+        $clients_id = $company->clients()->pluck('id')->all();
+
+        $vehicles = Vehicle::whereIn('client_id', $clients_id)->get();
+
+        $response['status'] = 0;
+        $response['message'] = 'Ok!';
+        $response['clients'] = $vehicles;
+
+        return response()
+            ->json($response, 200,
+                ['Content-type' => 'application/json; charset=utf-8'],
+                JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -45,17 +63,6 @@ class VehicleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show(Vehicle $vehicle)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Vehicle  $vehicle
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Vehicle $vehicle)
     {
         //
     }
