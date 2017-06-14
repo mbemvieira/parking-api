@@ -16,10 +16,10 @@ class CreateVehiclesTable extends Migration
         Schema::create('vehicles', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('client_id')->unsigned();
-            $table->foreign('client_id')->references('id')->on('clients');
+            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->integer('parking_place_id')->unsigned()->nullable();
             $table->foreign('parking_place_id')->references('id')->on('parking_places');
-            
+
             $table->string('plate');
             $table->unique(['plate', 'client_id']);
             $table->string('brand');
@@ -27,7 +27,7 @@ class CreateVehiclesTable extends Migration
             $table->string('color')->nullable();
             $table->string('year')->nullable();
             $table->boolean('is_parked');
-            
+
             $table->timestamps();
         });
     }
