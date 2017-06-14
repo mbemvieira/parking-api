@@ -47,8 +47,8 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'client_name'      => 'required|string|max:100',
-            'cpf'              => 'required|unique:clients|digits_between:1,20',
+            'client_name'       => 'required|string|max:100',
+            'cpf'               => 'required|digits_between:1,20',
             'phone'             => 'required|digits_between:1,20',
             'zip_code'          => 'numeric|digits_between:1,20',
             'address_street'    => 'string|max:100',
@@ -61,7 +61,7 @@ class ClientController extends Controller
         $response = [];
 
         if($validator->fails()) {
-            $response['status'] = -1;
+            $response['status'] = -2;
             $response['message'] = 'Validation failed!';
             $response['validator'] = $validator->errors();
 
@@ -72,6 +72,20 @@ class ClientController extends Controller
         }
 
         $user = User::first();
+
+        $new_cpf = $request->has('cpf') ? $request->input('cpf') : 0;
+
+        $company = Company::where('user_id', $user->id)
+            ->whereHas('clients', function ($query) use ($new_cpf) {
+                $query->where('cpf', $new_cpf);
+            })->first();
+
+        if ( $company !== null ) {
+            $response['status'] = -1;
+            $response['message'] = 'There is already a Client with this CPF!';
+            return $response;
+        }
+
         $company = Company::where('user_id', $user->id)->first();
 
         $client = new Client;
@@ -143,7 +157,7 @@ class ClientController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'client_name'      => 'required|string|max:100',
-            'cpf'              => 'required|unique:clients|digits_between:1,20',
+            'cpf'              => 'required|digits_between:1,20',
             'phone'             => 'required|digits_between:1,20',
             'zip_code'          => 'numeric|digits_between:1,20',
             'address_street'    => 'string|max:100',
@@ -156,7 +170,7 @@ class ClientController extends Controller
         $response = [];
 
         if($validator->fails()) {
-            $response['status'] = -1;
+            $response['status'] = -3;
             $response['message'] = 'Validation failed!';
             $response['validator'] = $validator->errors();
 
@@ -165,6 +179,34 @@ class ClientController extends Controller
                     ['Content-type' => 'application/json; charset=utf-8'],
                     JSON_UNESCAPED_UNICODE);
         }
+
+        $user = User::first();
+
+        $company = Company::where('user_id', $user->id)
+            ->whereHas('clients', function ($query) use ($client) {
+                $query->where('id', $client->id);
+            })->first();
+
+        if ( $company === null ) {
+            $response['status'] = -2;
+            $response['message'] = 'Client not found!';
+            return $response;
+        }
+
+        $new_cpf = $request->has('cpf') ? $request->input('cpf') : 0;
+
+        $company = Company::where('user_id', $user->id)
+            ->whereHas('clients', function ($query) use ($new_cpf) {
+                $query->where('cpf', $new_cpf);
+            })->first();
+
+        if ( ($company !== null) && ($new_cpf != $client->cpf) ) {
+            $response['status'] = -1;
+            $response['message'] = 'There is already a Client with this CPF!';
+            return $response;
+        }
+
+        $company = Company::where('user_id', $user->id)->first();
 
         $client->client_name = $request->has('client_name') ? $request->input('client_name') : null;
         $client->cpf = $request->has('cpf') ? $request->input('cpf') : null;

@@ -78,7 +78,7 @@ $factory->define(App\ParkingPlace::class, function (Faker\Generator $faker) {
 $factory->define(App\Vehicle::class, function (Faker\Generator $faker) {
     return [
         // client_id, parking_place_id
-        'plate' => $faker->unique()->bothify('??? ####'),
+        'plate' => $faker->unique()->bothify('???####'),
         'brand' => $faker->word,
         'model' => $faker->word,
         'color' => $faker->safeColorName,

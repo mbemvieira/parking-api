@@ -31,6 +31,10 @@ Route::group(['prefix' => 'api/v1.0'], function () {
 
     // VEHICLE
     Route::get('vehicle', 'VehicleController@index')->name('vehicle.index');
+    Route::post('vehicle', 'VehicleController@store')->name('vehicle.store');
+    Route::get('vehicle/{vehicle}', 'VehicleController@show')->name('vehicle.show');
+    Route::patch('vehicle/{vehicle}', 'VehicleController@update')->name('vehicle.update');
+    Route::delete('vehicle/{vehicle}', 'VehicleController@destroy')->name('vehicle.destroy');
 
 
     // PARKING PLACE

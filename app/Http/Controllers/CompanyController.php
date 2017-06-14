@@ -49,7 +49,7 @@ class CompanyController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'company_name'      => 'required|string|max:100',
-            'cnpj'              => 'required|unique:companies|digits_between:1,20',
+            'cnpj'              => 'required|unique:companies,cnpj,'. $company->cnpj .',cnpj|digits_between:1,20',
             'phone'             => 'required|digits_between:1,20',
             'zip_code'          => 'numeric|digits_between:1,20',
             'address_street'    => 'string|max:100',
