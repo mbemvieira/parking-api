@@ -21,7 +21,6 @@ class CreateParkingPlacesTable extends Migration
             $table->string('parking_place_name');
             $table->unique(['parking_place_name', 'company_id']);
             $table->dateTime('vehicle_last_entry')->nullable();
-            $table->boolean('is_empty');
 
             $table->timestamps();
         });

@@ -6,6 +6,7 @@ use App\Company;
 use App\Payment;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
@@ -16,7 +17,7 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        $user = User::first();
+        $user = Auth::user();
         $company = Company::where('user_id', $user->id)->first();
 
         $response = [];

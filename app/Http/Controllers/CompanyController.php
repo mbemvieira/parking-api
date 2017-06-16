@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Company;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Validator;
 
 class CompanyController extends Controller
@@ -17,7 +18,7 @@ class CompanyController extends Controller
      */
     public function show()
     {
-        $user = User::first();
+        $user = Auth::user();
         $company = Company::where('user_id', $user->id)->first();
 
         $response = [];
@@ -70,6 +71,14 @@ class CompanyController extends Controller
                 ->json($response, 200,
                     ['Content-type' => 'application/json; charset=utf-8'],
                     JSON_UNESCAPED_UNICODE);
+        }
+
+        $user = Auth::user();
+
+        if ( $company->user_id != $user->id ) {
+            $response['status'] = -1;
+            $response['message'] = 'Company not found!';
+            return $response;
         }
 
         $company->company_name = $request->has('company_name') ? $request->input('company_name') : null;

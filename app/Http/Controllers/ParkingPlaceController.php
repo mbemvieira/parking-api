@@ -6,6 +6,7 @@ use App\Company;
 use App\User;
 use App\ParkingPlace;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ParkingPlaceController extends Controller
 {
@@ -16,7 +17,7 @@ class ParkingPlaceController extends Controller
      */
     public function index()
     {
-        $user = User::first();
+        $user = Auth::user();
         $company = Company::where('user_id', $user->id)->first();
 
         $response = [];

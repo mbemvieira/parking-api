@@ -8,6 +8,7 @@ use App\ParkingPlace;
 use App\User;
 use App\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Validator;
 
 class VehicleController extends Controller
@@ -19,7 +20,7 @@ class VehicleController extends Controller
      */
     public function index()
     {
-        $user = User::first();
+        $user = Auth::user();
         $company = Company::where('user_id', $user->id)->first();
 
         $response = [];
@@ -69,7 +70,7 @@ class VehicleController extends Controller
         $response = [];
 
         if($validator->fails()) {
-            $response['status'] = -3;
+            $response['status'] = -4;
             $response['message'] = 'Validation failed!';
             $response['validator'] = $validator->errors();
 
@@ -79,7 +80,7 @@ class VehicleController extends Controller
                     JSON_UNESCAPED_UNICODE);
         }
 
-        $user = User::first();
+        $user = Auth::user();
 
         $company = Company::where('user_id', $user->id)
             ->whereHas('clients', function ($query) use ($request) {
@@ -92,7 +93,7 @@ class VehicleController extends Controller
             ->first();
 
         if ( $company === null ) {
-            $response['status'] = -2;
+            $response['status'] = -3;
             $response['message'] = 'Client or Parking Place not found!';
             return $response;
         }
@@ -105,31 +106,35 @@ class VehicleController extends Controller
             })->first();
 
         if ( $client !== null ) {
-            $response['status'] = -1;
+            $response['status'] = -2;
             $response['message'] = 'This Client already has a Vehicle with this Plate!';
             return $response;
         }
 
         $vehicle = new Vehicle;
 
+        $parking_place = ParkingPlace::find(
+            $request->has('parking_place_id') ? $request->input('parking_place_id') : 0
+        );
+
+        if ( $parking_place === null ) {
+            $vehicle->parking_place_id = null;
+        } else if ( $parking_place->vehicle === null ) {
+            $vehicle->parking_place()->associate($parking_place);
+        } else {
+            $response['status'] = -1;
+            $response['message'] = 'This Parking Place is not empty!';
+            return $response;
+        }
+
         $vehicle->plate = $request->has('plate') ? $request->input('plate') : null;
         $vehicle->brand = $request->has('brand') ? $request->input('brand') : null;
         $vehicle->model = $request->has('model') ? $request->input('model') : null;
         $vehicle->color = $request->has('color') ? $request->input('color') : null;
         $vehicle->year = $request->has('year') ? $request->input('year') : null;
-        $vehicle->is_parked = $request->has('parking_place_id') ? true : false;
         $vehicle->client_id = $request->has('client_id') ? $request->input('client_id') : null;
-        $vehicle->parking_place_id = $request->has('parking_place_id') ?
-            $request->input('parking_place_id') : null;
 
         $vehicle->save();
-
-        // Use disassociate first
-        if ( $request->has('parking_place_id') ) {
-            $parking_place = ParkingPlace::find( $request->input('parking_place_id') );
-            $parking_place->is_empty = false;
-            $parking_place->save();
-        }
 
         $response['status'] = 0;
         $response['message'] = 'Ok!';
@@ -148,7 +153,7 @@ class VehicleController extends Controller
      */
     public function show(Vehicle $vehicle)
     {
-        $user = User::first();
+        $user = Auth::user();
         $company = Company::where('user_id', $user->id)
             ->whereHas('clients', function ($query) use ($vehicle) {
                 $query->where('id', $vehicle->client->id);
@@ -195,7 +200,7 @@ class VehicleController extends Controller
         $response = [];
 
         if($validator->fails()) {
-            $response['status'] = -3;
+            $response['status'] = -5;
             $response['message'] = 'Validation failed!';
             $response['validator'] = $validator->errors();
 
@@ -205,7 +210,7 @@ class VehicleController extends Controller
                     JSON_UNESCAPED_UNICODE);
         }
 
-        $user = User::first();
+        $user = Auth::user();
 
         $company = Company::where('user_id', $user->id)
             ->whereHas('clients', function ($query) use ($vehicle) {
@@ -215,7 +220,7 @@ class VehicleController extends Controller
         $response = [];
 
         if ( $company === null ) {
-            $response['status'] = -3;
+            $response['status'] = -4;
             $response['message'] = 'Vehicle not found!';
             return $response;
         }
@@ -231,7 +236,7 @@ class VehicleController extends Controller
             ->first();
 
         if ( $company === null ) {
-            $response['status'] = -2;
+            $response['status'] = -3;
             $response['message'] = 'Client or Parking Place not found!';
             return $response;
         }
@@ -244,8 +249,22 @@ class VehicleController extends Controller
             })->first();
 
         if ( ($client !== null) && ($new_plate != $vehicle->plate) ) {
-            $response['status'] = -1;
+            $response['status'] = -2;
             $response['message'] = 'This Client already has a Vehicle with this Plate!';
+            return $response;
+        }
+
+        $parking_place = ParkingPlace::find(
+            $request->has('parking_place_id') ? $request->input('parking_place_id') : 0
+        );
+
+        if ( $parking_place === null ) {
+            $vehicle->parking_place()->dissociate();
+        } else if ( $parking_place->vehicle === null ) {
+            $vehicle->parking_place()->associate( $parking_place );
+        } else if ( $vehicle->parking_place_id != $parking_place->id ) {
+            $response['status'] = -1;
+            $response['message'] = 'This Parking Place is not empty!';
             return $response;
         }
 
@@ -254,18 +273,9 @@ class VehicleController extends Controller
         $vehicle->model = $request->has('model') ? $request->input('model') : null;
         $vehicle->color = $request->has('color') ? $request->input('color') : null;
         $vehicle->year = $request->has('year') ? $request->input('year') : null;
-        $vehicle->is_parked = $request->has('parking_place_id') ? true : false;
         $vehicle->client_id = $request->has('client_id') ? $request->input('client_id') : null;
-        $vehicle->parking_place_id = $request->has('parking_place_id') ?
-            $request->input('parking_place_id') : null;
 
         $vehicle->save();
-
-        if ( $request->has('parking_place_id') ) {
-            $parking_place = ParkingPlace::find( $request->input('parking_place_id') );
-            $parking_place->is_empty = false;
-            $parking_place->save();
-        }
 
         $response['status'] = 0;
         $response['message'] = 'Ok!';
@@ -284,7 +294,7 @@ class VehicleController extends Controller
      */
     public function destroy(Vehicle $vehicle)
     {
-        $user = User::first();
+        $user = Auth::user();
         $company = Company::where('user_id', $user->id)
             ->whereHas('clients', function ($query) use ($vehicle) {
                 $query->where('id', $vehicle->client->id);

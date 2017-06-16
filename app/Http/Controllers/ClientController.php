@@ -6,6 +6,7 @@ use App\Client;
 use App\Company;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Validator;
 
 class ClientController extends Controller
@@ -17,7 +18,8 @@ class ClientController extends Controller
      */
     public function index()
     {
-        $user = User::first();
+        $user = Auth::user();
+
         $company = Company::where('user_id', $user->id)->first();
 
         $response = [];
@@ -71,7 +73,7 @@ class ClientController extends Controller
                     JSON_UNESCAPED_UNICODE);
         }
 
-        $user = User::first();
+        $user = Auth::user();
 
         $new_cpf = $request->has('cpf') ? $request->input('cpf') : 0;
 
@@ -122,7 +124,7 @@ class ClientController extends Controller
      */
     public function show(Client $client)
     {
-        $user = User::first();
+        $user = Auth::user();
         $company = Company::where('user_id', $user->id)
             ->whereHas('clients', function ($query) use ($client) {
                 $query->where('id', $client->id);
@@ -180,7 +182,7 @@ class ClientController extends Controller
                     JSON_UNESCAPED_UNICODE);
         }
 
-        $user = User::first();
+        $user = Auth::user();
 
         $company = Company::where('user_id', $user->id)
             ->whereHas('clients', function ($query) use ($client) {
@@ -239,7 +241,7 @@ class ClientController extends Controller
      */
     public function destroy(Client $client)
     {
-        $user = User::first();
+        $user = Auth::user();
         $company = Company::where('user_id', $user->id)
             ->whereHas('clients', function ($query) use ($client) {
                 $query->where('id', $client->id);

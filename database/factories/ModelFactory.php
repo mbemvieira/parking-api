@@ -68,9 +68,8 @@ $factory->define(App\Client::class, function (Faker\Generator $faker) {
 $factory->define(App\ParkingPlace::class, function (Faker\Generator $faker) {
     return [
         // company_id
-        'parking_place_name' => $faker->bothify('?##'),
+        'parking_place_name' => $faker->unique()->bothify('?##'),
         'vehicle_last_entry' => \Carbon\Carbon::now(),
-        'is_empty' => true,
     ];
 });
 
@@ -83,7 +82,6 @@ $factory->define(App\Vehicle::class, function (Faker\Generator $faker) {
         'model' => $faker->word,
         'color' => $faker->safeColorName,
         'year' => $faker->numerify('200#'),
-        'is_parked' => false,
     ];
 });
 

@@ -26,7 +26,6 @@ class CreateVehiclesTable extends Migration
             $table->string('model');
             $table->string('color')->nullable();
             $table->string('year')->nullable();
-            $table->boolean('is_parked');
 
             $table->timestamps();
         });
