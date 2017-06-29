@@ -17,7 +17,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::group(['prefix' => 'v1.0', 'middleware' => 'auth.basic'], function () {
+Route::group(['prefix' => 'v1.0', 'middleware' => ['cors', 'auth.basic']], function () {
+
     // COMPANY
     Route::get('company', 'CompanyController@show')->name('company.show');
     Route::patch('company/{company}', 'CompanyController@update')->name('company.update');
