@@ -18,7 +18,7 @@ class ParkingPlace extends Model
 
     public function company()
     {
-        return $this->belongsTo('App\ParkingPlace');
+        return $this->belongsTo('App\Company');
     }
 
     public function vehicle()
